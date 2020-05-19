@@ -1,0 +1,19 @@
+#ifndef _IMAGEPROCESSOR_HEADER_
+#define _IMAGEPROCESSOR_HEADER_
+
+#include "ImageAlgorithmStrategy.h"
+#include <memory>
+
+class ImageProcessor
+{
+    std::unique_ptr<ImageAlgorithmStrategy> algorithm_;
+    public:
+        ImageProcessor(const ImageAlgorithmStrategy* a) : algorithm_(a->clone()) {}
+        std::unique_ptr<PicturePGM> readImage(const char* filename, uint8_t padding_size=2);
+        std::unique_ptr<PicturePGM> processImage(PicturePGM* pic, Config& c);
+        int8_t writeImageAsPGM(PicturePGM* pic, const char* FILE_PATH);
+        ImageProcessor(const ImageProcessor& ) = delete;
+        ImageProcessor& operator=(ImageProcessor& ) = delete;
+};
+
+#endif
