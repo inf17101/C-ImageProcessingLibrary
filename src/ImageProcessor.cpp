@@ -63,7 +63,7 @@ std::unique_ptr<PicturePGM> ImageProcessor::processImage(PicturePGM* pic, Config
 
 int8_t ImageProcessor::writeImageAsPGM(PicturePGM* pic, const char* FILE_PATH)
 {
-    std::ofstream of(FILE_PATH, std::ios::out | std::ios::binary);
+    std::ofstream of(FILE_PATH, std::ios::out);
     if(!of)
         return -1;
     
@@ -71,9 +71,16 @@ int8_t ImageProcessor::writeImageAsPGM(PicturePGM* pic, const char* FILE_PATH)
     of << pic->height << " " << pic->width << "\n";
 
     of << pic->max_value << "\n";
+    of.close();
 
+    FILE* f = fopen(FILE_PATH, "ab");
+    if(!f)
+        return -1;
     for(int i=0; i<pic->height; ++i)
         for(int j=0; j<pic->width; ++j)
-            of << pic->map[i][j];
+            fputc(pic->map[i][j], f);
+
+    fclose(f);
+    return 0;
 
 }

@@ -10,14 +10,14 @@
 
 int main()
 {
-    const char FILE_PATH[] = "../TestSimple10x10.pgm";
+    const char FILE_PATH[] = "../../TestSimple10x10.pgm";
     auto imProcessor = std::make_unique<ImageProcessor>(new Sobel());
     auto picture = imProcessor->readImage(FILE_PATH);
     std::cout << "Read in image: " << std::endl;
     picture->printPic();
     Config c = {
         new TypedImageProperty<float>("sobel_threshold", 1000.0),
-        new TypedImageProperty<bool>("gradient_only", true)};
+        new TypedImageProperty<bool>("gradient_only", false)};
     auto sobel_pic = imProcessor->processImage(picture.get(), c);
 
     std::cout << "Sobel Picture: " << std::endl;
