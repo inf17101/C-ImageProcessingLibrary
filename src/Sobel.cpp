@@ -44,9 +44,9 @@ std::unique_ptr<PicturePGM> Sobel::processImage(PicturePGM* pic, Config& c)
 
     static float sobel_Dx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
     static float sobel_Dy[3][3] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
-
+    std::uint8_t max_value = gradient_only ? pic->max_value : 255;
     std::uint32_t new_size = pic->height-2 * pic->width-2;
-    std::unique_ptr<PicturePGM> sobelPicture = std::make_unique<PicturePGM>(pic->height-2, pic->width-2, new_size, pic->max_value, nullptr);
+    std::unique_ptr<PicturePGM> sobelPicture = std::make_unique<PicturePGM>(pic->height-2, pic->width-2, new_size, max_value, nullptr);
 
     sobelPicture->map = new float*[sobelPicture->height];
     for(int i=0; i<sobelPicture->height; ++i)

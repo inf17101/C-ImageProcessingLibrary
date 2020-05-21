@@ -10,21 +10,21 @@
 
 int main()
 {
-    const char FILE_PATH[] = "../../TestSimple10x10.pgm";
+    const char FILE_PATH[] = "../../SteilkurveGRAY_pgm.pgm";
     auto imProcessor = std::make_unique<ImageProcessor>(new Sobel());
     auto picture = imProcessor->readImage(FILE_PATH);
     std::cout << "Read in image: " << std::endl;
-    picture->printPic();
+    //picture->printPic();
     Config c = {
-        new TypedImageProperty<float>("sobel_threshold", 1000.0),
+        new TypedImageProperty<float>("sobel_threshold", 100.0),
         new TypedImageProperty<bool>("gradient_only", false)};
     auto sobel_pic = imProcessor->processImage(picture.get(), c);
 
     std::cout << "Sobel Picture: " << std::endl;
 
-    sobel_pic->printPic();
+    //sobel_pic->printPic();
 
-    imProcessor->writeImageAsPGM(sobel_pic.get(), "TestImage10x10out.pgm");
+    imProcessor->writeImageAsPGM(sobel_pic.get(), "SteilkurveGRAY_pgm_out.pgm");
 
     for(auto& i : c)
         delete i;
