@@ -20,8 +20,8 @@ std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint
 
     if(fgets(line, sizeof(line), fhandle) == NULL) return inputPicture;
 
-    inputPicture->height = strtoul(strtok(line, " "), NULL, 10);
-    inputPicture->width = strtoul(strtok(NULL, " "), NULL, 10);
+    inputPicture->width = strtoul(strtok(line, " "), NULL, 10);
+    inputPicture->height = strtoul(strtok(NULL, " "), NULL, 10);
     inputPicture->size = inputPicture->height * inputPicture -> width;
 
     printf("height: %d\nwidth: %d\nsize: %lu\n\n", inputPicture->height, inputPicture->width, inputPicture->size);
@@ -46,9 +46,7 @@ std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint
 
     for (int i=1; i<inputPicture->height-1; ++i)
         for(int j=1; j<inputPicture->width-1; ++j)
-        {
-            inputPicture->map[i][j] = (float) fgetc(fhandle);
-        }
+            inputPicture->map[i][j] = static_cast<float> (fgetc(fhandle));
 
     fclose(fhandle);
 
@@ -70,7 +68,7 @@ int8_t ImageProcessor::writeImageAsPGM(PicturePGM* pic, const char* FILE_PATH)
         return -1;
     
     of << "P5\n";
-    of << pic->height << " " << pic->width << "\n";
+    of << pic->width << " " << pic->height << "\n";
 
     of << static_cast<int>(pic->max_value) << "\n";
 
@@ -80,10 +78,11 @@ int8_t ImageProcessor::writeImageAsPGM(PicturePGM* pic, const char* FILE_PATH)
     for(int i=0; i<pic->height; ++i)
         for(int j=0; j<pic->width; ++j)
             of.put(pic->map[i][j]);
-
+    
     if(of.bad())
         return -1;
     of.close();
+
     return 0;
 
 }
