@@ -3,3 +3,4 @@
 *.txt
 *.pgm
 *.exe
+out/*

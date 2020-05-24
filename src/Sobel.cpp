@@ -71,8 +71,3 @@ std::unique_ptr<PicturePGM> Sobel::processImage(PicturePGM* pic, Config& c)
     }
     return sobelPicture;
 }
-
-std::unique_ptr<ImageAlgorithmStrategy> Sobel::clone() const
-{
-    return std::make_unique<Sobel>( *this );
-}

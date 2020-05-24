@@ -12,7 +12,6 @@ class Sobel : public ImageAlgorithmStrategy
         Sobel() = default;
         ~Sobel() = default;
         virtual std::unique_ptr<PicturePGM> processImage(PicturePGM* pic, Config& c) override;
-        virtual std::unique_ptr<ImageAlgorithmStrategy> clone() const override;
 
 };
 

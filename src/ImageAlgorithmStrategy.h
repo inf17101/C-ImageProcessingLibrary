@@ -4,15 +4,16 @@
 #include "Picture.h"
 #include "ImageConfig.h"
 #include <vector>
+#include <map>
 
 using Config = std::vector<ImageProperty*>;
+using Config_new = std::map<std::string, ImageProperty*>;
 
 class ImageAlgorithmStrategy
 {
     public:
         virtual ~ImageAlgorithmStrategy() = default;
         virtual std::unique_ptr<PicturePGM> processImage(PicturePGM* pic, Config& c) = 0;
-        virtual std::unique_ptr<ImageAlgorithmStrategy> clone() const = 0;
 };
 
 #endif

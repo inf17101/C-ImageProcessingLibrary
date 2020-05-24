@@ -24,7 +24,7 @@ std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint
     inputPicture->height = strtoul(strtok(NULL, " "), NULL, 10);
     inputPicture->size = inputPicture->height * inputPicture -> width;
 
-    printf("height: %d\nwidth: %d\nsize: %lu\n\n", inputPicture->height, inputPicture->width, inputPicture->size);
+    printf("height: %d\nwidth: %d\nsize: %d\n\n", inputPicture->height, inputPicture->width, inputPicture->size);
     
     if(fgets(line, sizeof(line), fhandle) == NULL) return std::make_unique<PicturePGM>();
     inputPicture->max_value = (uint8_t) strtoul(line, NULL, 10);
