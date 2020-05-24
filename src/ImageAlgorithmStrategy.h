@@ -6,8 +6,7 @@
 #include <vector>
 #include <map>
 
-using Config = std::vector<ImageProperty*>;
-using Config_new = std::map<std::string, ImageProperty*>;
+using Config= std::map<std::string, ImageProperty*>;
 
 class ImageAlgorithmStrategy
 {

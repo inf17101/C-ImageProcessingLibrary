@@ -3,32 +3,29 @@
 #include <memory>
 #include <algorithm>
 
-
 bool Sobel::isConfigValid(Config& c, float& threshold_value, bool& gradient_only)
 {
     bool validConfig = true;
-    std::for_each(c.begin(), c.end(), [&](ImageProperty* c_){
-        if(c_->getPropertyName() == "sobel_threshold")
-        {
-            auto p = dynamic_cast<TypedImageProperty<float>*>(c_);
-            if (!p)
-                validConfig=false;
-            else
-                threshold_value = p->getProperty();
-            
-        }else if(c_->getPropertyName() == "gradient_only")
-        {
-            auto p = dynamic_cast<TypedImageProperty<bool>*>(c_);
-            if(!p)
-                validConfig = false;
-            else
-                gradient_only = p->getProperty();
-            
-        }else
-        {
+    auto it = c.find("sobel_threshold");
+    if(it != c.end())
+    {
+        if(auto p = dynamic_cast<TypedImageProperty<float>*>(it->second); p)
+            threshold_value = p->getProperty();
+        else
             validConfig = false;
-        }
-    });
+            
+    }else
+        validConfig = false;
+
+    if(it = c.find("gradient_only"); it != c.end())
+    {
+        if(auto ptr = dynamic_cast<TypedImageProperty<bool>*>(it->second); ptr)
+            gradient_only = ptr->getProperty();
+        else
+            validConfig = false;
+    }else
+        validConfig = false;
+
     return validConfig;
 }
 
