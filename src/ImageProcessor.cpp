@@ -39,7 +39,7 @@ std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint
     for(int i=0; i<inputPicture->height; ++i) //init matrix and initialize with zero padding
     {
         inputPicture->map[i] = new float[inputPicture->width];
-        if (inputPicture->map == NULL) return std::make_unique<PicturePGM>();
+        if (inputPicture->map[i] == NULL) return std::make_unique<PicturePGM>();
         for(int j=0; j<inputPicture->width; ++j)
             inputPicture->map[i][j] = 0;
     }

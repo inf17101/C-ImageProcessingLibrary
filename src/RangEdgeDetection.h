@@ -7,11 +7,12 @@
 
 class RangEdgeDetection : public ImageAlgorithmStrategy
 {
+    std::unique_ptr<PicturePGM> make_padding(PicturePGM* pic);
+    
     public:
         RangEdgeDetection() = default;
         ~RangEdgeDetection() = default;
         virtual std::unique_ptr<PicturePGM> processImage(PicturePGM* pic, Config& c) override;
-        virtual std::unique_ptr<ImageAlgorithmStrategy> clone() const override;
 };
 
 #endif

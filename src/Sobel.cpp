@@ -12,15 +12,17 @@ bool Sobel::isConfigValid(Config& c, float& threshold_value, bool& gradient_only
         if(auto p = dynamic_cast<TypedImageProperty<float>*>(it->second); p)
             threshold_value = p->getProperty();
         else
-            validConfig = false;
-            
-    }else
-        validConfig = false;
+            validConfig = false;       
+    }
 
-    if(it = c.find("gradient_only"); it != c.end())
+    if(auto it1 = c.find("gradient_only"); it1 != c.end())
     {
-        if(auto ptr = dynamic_cast<TypedImageProperty<bool>*>(it->second); ptr)
+        if(auto ptr = dynamic_cast<TypedImageProperty<bool>*>(it1->second); ptr)
+        {
             gradient_only = ptr->getProperty();
+            if(!gradient_only && (it == c.end()))
+                validConfig = false;
+        }
         else
             validConfig = false;
     }else
