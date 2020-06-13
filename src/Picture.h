@@ -13,7 +13,7 @@ struct PicturePGM
     std::uint8_t max_value;
     float** map;
 
-    PicturePGM(std::uint32_t h, std::uint32_t w, std::uint32_t s, std::uint8_t max_v, float** m)
+    PicturePGM(const std::uint32_t h, const std::uint32_t w, const std::uint32_t s, const std::uint8_t max_v, float** m)
     : height(h), width(w), size(s), max_value(max_v), map(m) {}
 
     PicturePGM() : height(0), width(0), size(0), max_value(0), map(nullptr) {}

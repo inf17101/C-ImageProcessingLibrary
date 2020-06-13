@@ -12,11 +12,10 @@
 
 int main()
 {
-    /*
+
     const char FILE_PATH[] = "images/SteilkurveGRAY_pgm.pgm";
-    auto imProcessor = std::make_unique<ImageProcessor>(std::make_unique<Sobel>());
-    */
-    const char FILE_PATH[] = "images/TestSimple9x9.pgm";
+    //auto imProcessor = std::make_unique<ImageProcessor>(std::make_unique<Sobel>());
+    //const char FILE_PATH[] = "images/TestSimple9x9.pgm";
     auto imProcessor = std::make_unique<ImageProcessor>(std::make_unique<RangEdgeDetection>());
     auto picture = imProcessor->readImage(FILE_PATH);
 
@@ -31,9 +30,10 @@ int main()
     for(auto it = c.begin(); it != c.end(); ++it)
         delete (it->second);
     */
-
+    
     auto output_pic = imProcessor->processImage(picture.get(), c);
-    output_pic->printPic();
+    imProcessor->writeImageAsPGM(output_pic.get(), "out/SteilkurveGRAY_pgm_rangbild_out.pgm");
+    //output_pic->printPic();
     return 0;
 }
 

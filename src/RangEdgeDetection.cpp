@@ -6,27 +6,25 @@
 
 std::unique_ptr<PicturePGM> RangEdgeDetection::make_padding(PicturePGM* pic)
 {
-    auto new_pic = std::make_unique<PicturePGM>();
-    new_pic->height = pic->height + 2;
-    new_pic->width = pic->width + 2;
-    new_pic->size = new_pic->height * new_pic->width;
-    new_pic->max_value = pic->max_value;
+    std::uint32_t new_height = pic->height + 2;
+    std::uint32_t new_width = pic->width + 2;
 
-    new_pic->map = new float*[new_pic->height];
-    if(new_pic->map == nullptr) return std::make_unique<PicturePGM>();
+    float** new_map = new float*[new_height];
+    if(new_map == nullptr) return std::make_unique<PicturePGM>();
 
-    for(int i=0; i<new_pic->height; ++i)
+    for(int i=0; i<new_height; ++i)
     {
-        new_pic->map[i] = new float[new_pic->width];
-        if (new_pic->map[i] == nullptr) return std::make_unique<PicturePGM>();
-        for(int j=0; j<new_pic->width; ++j)
-            new_pic->map[i][j] = 0;
+        new_map[i] = new float[new_width];
+        if (new_map[i] == nullptr) return std::make_unique<PicturePGM>();
+        for(int j=0; j<new_width; ++j)
+            new_map[i][j] = 0;
     }
 
-    for(int i=1; i<new_pic->height-1; ++i)
-        for(int j=1; j<new_pic->width-1; ++j)
-            new_pic->map[i][j] = pic->map[i-1][j-1];
+    for(int i=1; i<new_height-1; ++i)
+        for(int j=1; j<new_width-1; ++j)
+            new_map[i][j] = pic->map[i-1][j-1];
 
+    auto new_pic = std::make_unique<PicturePGM>(new_height, new_width, new_height*new_width, pic->max_value, new_map);
     return new_pic;
 }
 
@@ -89,6 +87,26 @@ void RangEdgeDetection::replace_by_threshold(PicturePGM* pic, float threshold)
     pic->max_value = 255.0;
 }
 
+std::unique_ptr<PicturePGM> RangEdgeDetection::removePadding(PicturePGM* pic)
+{
+    std::uint32_t new_height = pic->height-2;
+    std::uint32_t new_width = pic->width-2;
+    float** new_map = new float*[new_height];
+    if(new_map == nullptr) return std::make_unique<PicturePGM>();
+    for(int i=0; i<new_height; ++i)
+    {
+        new_map[i] = new float[new_width];
+        if(new_map[i] == nullptr) return std::make_unique<PicturePGM>();
+    }
+    auto new_pic = std::make_unique<PicturePGM>(new_height, new_width, new_height*new_width, pic->max_value, new_map);
+
+    for(int row=1; row<pic->height-1; ++row)
+        for(int col=1; col<pic->width-1; ++col)
+            new_pic->map[row-1][col-1] = pic->map[row][col];
+    
+    return new_pic;
+}
+
 std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Config& c)
 {
     auto sobel = std::make_unique<Sobel>();
@@ -98,17 +116,14 @@ std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Con
     delete c_sobel["gradient_only"];
     auto GradientPicture_WithPadding = make_padding(GradientPicture.get());
 
-    auto rang_pic = std::make_unique<PicturePGM>();
-    rang_pic->height = pic->height;
-    rang_pic->width = pic->width;
-    rang_pic->size = rang_pic->height * rang_pic->width;
-    rang_pic->map = new float*[rang_pic->height];
-    if(rang_pic->map == nullptr) return std::make_unique<PicturePGM>();
-    for(int i=0; i<rang_pic->height; ++i)
+    float** new_map = new float*[pic->height];
+    if(new_map == nullptr) return std::make_unique<PicturePGM>();
+    for(int i=0; i<pic->height; ++i)
     {
-        rang_pic->map[i] = new float[rang_pic->width];
-        if(rang_pic->map[i] == nullptr) return std::make_unique<PicturePGM>();
+        new_map[i] = new float[pic->width];
+        if(new_map[i] == nullptr) return std::make_unique<PicturePGM>();
     }
+    auto rang_pic = std::make_unique<PicturePGM>(pic->height, pic->width, pic->height*pic->width, pic->max_value, new_map);
 
     float pixel_surrounding[9];
     for(int row=0; row<GradientPicture_WithPadding->height-2; row++)
@@ -119,7 +134,7 @@ std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Con
                 for(int j=0; j<3; ++j)
                     pixel_surrounding[i*3 + j] = GradientPicture_WithPadding->map[row+i][col+j];
             
-            RangEdgeDetection::calculate_rang_position(pixel_surrounding, 9);
+            calculate_rang_position(pixel_surrounding, 9);
             for(int i=0; i<3; ++i)
                 for(int j=0; j<3; ++j)
                 {
@@ -129,6 +144,6 @@ std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Con
         }
     }
 
-    RangEdgeDetection::replace_by_threshold(rang_pic.get(), 7);
-    return rang_pic;
+    replace_by_threshold(rang_pic.get(), 7);
+    return removePadding(rang_pic.get());
 }
