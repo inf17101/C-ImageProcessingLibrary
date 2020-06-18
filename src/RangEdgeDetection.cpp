@@ -4,31 +4,37 @@
 #include <map>
 #include <algorithm>
 
-std::unique_ptr<PicturePGM> RangEdgeDetection::make_padding(PicturePGM* pic)
+
+bool RangEdgeDetection::isConfigValid(Config& c, float& threshold_value, unsigned int& surrounding)
 {
-    std::uint32_t new_height = pic->height + 2;
-    std::uint32_t new_width = pic->width + 2;
-
-    float** new_map = new float*[new_height];
-    if(new_map == nullptr) return std::make_unique<PicturePGM>();
-
-    for(int i=0; i<new_height; ++i)
+    bool validConfig = true;
+    if(auto it = c.find("rang_threshold"); it != c.end())
     {
-        new_map[i] = new float[new_width];
-        if (new_map[i] == nullptr) return std::make_unique<PicturePGM>();
-        for(int j=0; j<new_width; ++j)
-            new_map[i][j] = 0;
-    }
+        if(auto p = dynamic_cast<TypedImageProperty<float>*>(it->second); p)
+            threshold_value = p->getProperty();
+        else
+            validConfig = false;
+    }else
+        validConfig = false;
 
-    for(int i=1; i<new_height-1; ++i)
-        for(int j=1; j<new_width-1; ++j)
-            new_map[i][j] = pic->map[i-1][j-1];
-
-    auto new_pic = std::make_unique<PicturePGM>(new_height, new_width, new_height*new_width, pic->max_value, new_map);
-    return new_pic;
+    if(auto it1 = c.find("surrounding"); it1 != c.end())
+    {
+        if(auto ptr = dynamic_cast<TypedImageProperty<std::uint8_t>*>(it1->second); ptr)
+        {
+            if((ptr->getProperty() == 3) || (ptr->getProperty() == 5) || (ptr->getProperty() == 7))
+            {
+                surrounding = ptr->getProperty();
+            }else
+                validConfig = false;
+        }else
+            validConfig = false;
+    }else
+        validConfig = false;
+    
+    return validConfig;
 }
 
-void RangEdgeDetection::calculate_rang_position(float array[], const size_t len)
+void RangEdgeDetection::calculate_rang_position(float array[], const std::size_t len)
 {
     float **parray = new float*[len];
     if(parray == nullptr) {std::cout << "ERROR: cannot allocate memory to calculate rang position." << std::endl; exit(1);}
@@ -87,34 +93,22 @@ void RangEdgeDetection::replace_by_threshold(PicturePGM* pic, float threshold)
     pic->max_value = 255.0;
 }
 
-std::unique_ptr<PicturePGM> RangEdgeDetection::removePadding(PicturePGM* pic)
-{
-    std::uint32_t new_height = pic->height-2;
-    std::uint32_t new_width = pic->width-2;
-    float** new_map = new float*[new_height];
-    if(new_map == nullptr) return std::make_unique<PicturePGM>();
-    for(int i=0; i<new_height; ++i)
-    {
-        new_map[i] = new float[new_width];
-        if(new_map[i] == nullptr) return std::make_unique<PicturePGM>();
-    }
-    auto new_pic = std::make_unique<PicturePGM>(new_height, new_width, new_height*new_width, pic->max_value, new_map);
-
-    for(int row=1; row<pic->height-1; ++row)
-        for(int col=1; col<pic->width-1; ++col)
-            new_pic->map[row-1][col-1] = pic->map[row][col];
-    
-    return new_pic;
-}
-
 std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Config& c)
 {
+    float threshold_value;
+    unsigned int surrounding;
+    if (!isConfigValid(c, threshold_value, surrounding))
+    {
+        std::cout << "error in config." << std::endl;
+        return std::make_unique<PicturePGM>();
+    }
+
     auto sobel = std::make_unique<Sobel>();
     Config c_sobel;
     c_sobel["gradient_only"] = new TypedImageProperty<bool>("gradient_only", true);
     auto GradientPicture = sobel->processImage(pic, c_sobel);
     delete c_sobel["gradient_only"];
-    auto GradientPicture_WithPadding = make_padding(GradientPicture.get());
+    GradientPicture->make_padding();
 
     float** new_map = new float*[pic->height];
     if(new_map == nullptr) return std::make_unique<PicturePGM>();
@@ -125,25 +119,27 @@ std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Con
     }
     auto rang_pic = std::make_unique<PicturePGM>(pic->height, pic->width, pic->height*pic->width, pic->max_value, new_map);
 
-    float pixel_surrounding[9];
-    for(int row=0; row<GradientPicture_WithPadding->height-2; row++)
+    const unsigned int surrounding_size = surrounding * surrounding;
+    float pixel_surrounding[surrounding_size];
+    for(int row=0; row<GradientPicture->height-(surrounding-1); ++row)
     {
-        for(int col=0; col<GradientPicture_WithPadding->width-2; col++)
+        for(int col=0; col<GradientPicture->width-(surrounding-1); ++col)
         {
-            for(int i=0; i<3; ++i)
-                for(int j=0; j<3; ++j)
-                    pixel_surrounding[i*3 + j] = GradientPicture_WithPadding->map[row+i][col+j];
+            for(int i=0; i<surrounding; ++i)
+                for(int j=0; j<surrounding; ++j)
+                    pixel_surrounding[i*surrounding + j] = GradientPicture->map[row+i][col+j];
             
-            calculate_rang_position(pixel_surrounding, 9);
-            for(int i=0; i<3; ++i)
-                for(int j=0; j<3; ++j)
+            calculate_rang_position(pixel_surrounding, surrounding_size);
+            for(int i=0; i<surrounding; ++i)
+                for(int j=0; j<surrounding; ++j)
                 {
-                    rang_pic->map[row+i][col+j] = pixel_surrounding[i*3 + j];
+                    rang_pic->map[row+i][col+j] = pixel_surrounding[i*surrounding + j];
                 }
             
         }
     }
 
-    replace_by_threshold(rang_pic.get(), 7);
-    return removePadding(rang_pic.get());
+    replace_by_threshold(rang_pic.get(), threshold_value);
+    rang_pic->removePadding();
+    return rang_pic;
 }

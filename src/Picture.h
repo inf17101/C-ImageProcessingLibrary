@@ -65,6 +65,70 @@ struct PicturePGM
         }
     }
 
+    void make_padding(std::uint8_t padding=1)
+    {
+        if(padding < 1 || padding > 7)
+        {
+            std::cout << "Wrong padding. Expected padding between 1 and 8" << std::endl;
+            return;
+        }
+
+        height += padding*2;
+        width += padding*2;
+        size = height * width;
+        float** new_map = new float*[height];
+        if(new_map == nullptr) {std::cout << "cannot allocate new memory for making padding." << std::endl; return;}
+
+        for(int i=0; i<height; ++i)
+        {
+            new_map[i] = new float[width];
+            if(new_map[i] == nullptr) {std::cout << "cannot allocate new memory for making padding." << std::endl; return;}
+            for(int j=0; j<width; ++j)
+                new_map[i][j] = 0;
+        }
+
+        for(int i=1; i<height-1; ++i)
+            for(int j=1; j<width-1; ++j)
+            new_map[i][j] = map[i-1][j-1];
+        
+        for(unsigned int i=0; i<height-padding*2; ++i)
+            delete [] map[i];
+        delete [] map;
+
+        map = new_map;
+
+    }
+
+    void removePadding(std::uint8_t padding=1)
+    {
+        if((height-padding) < 1 || (width-padding) < 1)
+        {
+            std::cout << "removing padding does eliminate the picture. Padding size is too big." << std::endl;
+            return;
+        }
+
+        height -= padding*2;
+        width -= padding*2;
+        size = height * width;
+        float** new_map = new float*[height];
+        if(new_map == nullptr) {std::cout << "cannot allocate memory while removing padding." << std::endl; return;}
+        for(int i=0; i<height; ++i)
+        {
+            new_map[i] = new float[width];
+            if(new_map[i] == nullptr) {std::cout << "cannot allocate memory while removing padding." << std::endl; return;}
+        }
+
+        for(int row=1; row<height+padding*2-1; ++row)
+            for(int col=1; col<width+padding*2-1; ++col)
+                new_map[row-1][col-1] = map[row][col];
+        
+        for(unsigned int i=0; i<height+padding*2; ++i)
+            delete [] map[i];
+        delete [] map;
+
+        map = new_map;
+    }
+
 };
 
 #endif

@@ -7,10 +7,9 @@
 
 class RangEdgeDetection : public ImageAlgorithmStrategy
 {
-    std::unique_ptr<PicturePGM> make_padding(PicturePGM* pic);
-    void calculate_rang_position(float array[], const size_t len);
+    void calculate_rang_position(float array[], const std::size_t len);
     void replace_by_threshold(PicturePGM* pic, float threshold);
-    std::unique_ptr<PicturePGM> removePadding(PicturePGM* pic);
+    bool isConfigValid(Config& c, float& threshold_value, unsigned int& surrounding);
     public:
         RangEdgeDetection() = default;
         ~RangEdgeDetection() = default;
