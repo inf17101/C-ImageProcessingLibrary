@@ -55,6 +55,9 @@ struct PicturePGM
 
     void printPic() const
     {
+        std::cout << "Picture: " << "\n" << "width: " << width << "\nheight: " << height << std::endl;
+        std::cout << "size: " << size << "\nmax value: " << static_cast<unsigned int>(max_value) << std::endl;
+
         for(int i=0; i<height; ++i)
         {
             for(int j=0; j<width;++j)

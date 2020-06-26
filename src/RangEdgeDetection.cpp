@@ -135,7 +135,6 @@ std::unique_ptr<PicturePGM> RangEdgeDetection::processImage(PicturePGM* pic, Con
                 {
                     rang_pic->map[row+i][col+j] = pixel_surrounding[i*surrounding + j];
                 }
-            
         }
     }
 

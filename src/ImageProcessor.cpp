@@ -2,6 +2,16 @@
 #include <cstring>
 #include <fstream>
 
+bool ImageProcessor::checkPaddingOption(uint8_t padding_size)
+{
+    if(padding_size < 2 || padding_size > 7)
+    {
+        std::cerr << "illegal padding size. Should be: 7 <= padding_size >= 2" << std::endl;
+        return false;
+    }
+    return true;
+}
+
 std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint8_t padding_size)
 {
     std::unique_ptr<PicturePGM> inputPicture = std::make_unique<PicturePGM>();
@@ -70,7 +80,7 @@ int8_t ImageProcessor::writeImageAsPGM(PicturePGM* pic, const char* FILE_PATH)
     of << "P5\n";
     of << pic->width << " " << pic->height << "\n";
 
-    of << static_cast<int>(pic->max_value) << "\n";
+    of << static_cast<unsigned int>(pic->max_value) << "\n";
 
     if(of.bad())
         return -1;
