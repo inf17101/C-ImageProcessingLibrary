@@ -14,27 +14,27 @@ bool ImageProcessor::checkPaddingOption(uint8_t padding_size)
 
 std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint8_t padding_size)
 {
-    std::unique_ptr<PicturePGM> inputPicture = std::make_unique<PicturePGM>();
+    if(!checkPaddingOption(padding_size)) return std::make_unique<PicturePGM>();
+
     FILE *fhandle = fopen(filename, "rb");
     if (!fhandle)
     {
-        printf("File not found!\n");
-        return inputPicture;
+        std::cerr << "File could not be opened." << std::endl;
+        return std::make_unique<PicturePGM>();
     }
-    printf("File opened correctly!\n");
+    std::cout << "Opened file " << filename << " correctly!" << std::endl;
 
     char line[75];
-    if (fgets(line, sizeof(line), fhandle) == NULL) return inputPicture;
+    if (fgets(line, sizeof(line), fhandle) == NULL) return std::make_unique<PicturePGM>();
 
-    if(strncmp(line, "P5",2) != 0) return std::move(inputPicture);
+    if(strncmp(line, "P5",2) != 0) return std::make_unique<PicturePGM>();
 
-    if(fgets(line, sizeof(line), fhandle) == NULL) return inputPicture;
+    if(fgets(line, sizeof(line), fhandle) == NULL) return std::make_unique<PicturePGM>();
 
+    std::unique_ptr<PicturePGM> inputPicture = std::make_unique<PicturePGM>();
     inputPicture->width = strtoul(strtok(line, " "), NULL, 10);
     inputPicture->height = strtoul(strtok(NULL, " "), NULL, 10);
     inputPicture->size = inputPicture->height * inputPicture -> width;
-
-    printf("height: %d\nwidth: %d\nsize: %d\n\n", inputPicture->height, inputPicture->width, inputPicture->size);
     
     if(fgets(line, sizeof(line), fhandle) == NULL) return std::make_unique<PicturePGM>();
     inputPicture->max_value = (uint8_t) strtoul(line, NULL, 10);
@@ -42,6 +42,7 @@ std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint
     inputPicture->height += padding_size; //because of zero padding
     inputPicture->width += padding_size;
 
+    /*
     inputPicture->map = new float*[inputPicture->height];
     if (inputPicture->map == NULL) return std::make_unique<PicturePGM>();
 
@@ -52,7 +53,9 @@ std::unique_ptr<PicturePGM> ImageProcessor::readImage(const char* filename, uint
         if (inputPicture->map[i] == NULL) return std::make_unique<PicturePGM>();
         for(int j=0; j<inputPicture->width; ++j)
             inputPicture->map[i][j] = 0;
-    }
+    }*/
+    auto success = inputPicture->reinitWithValue(0.0, inputPicture->width, inputPicture->height);
+    if(!success) return std::make_unique<PicturePGM>();
 
     for (int i=1; i<inputPicture->height-1; ++i)
         for(int j=1; j<inputPicture->width-1; ++j)

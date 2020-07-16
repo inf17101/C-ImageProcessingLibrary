@@ -92,7 +92,7 @@ struct PicturePGM
 
         for(int i=1; i<height-1; ++i)
             for(int j=1; j<width-1; ++j)
-            new_map[i][j] = map[i-1][j-1];
+                new_map[i][j] = map[i-1][j-1];
         
         for(unsigned int i=0; i<height-padding*2; ++i)
             delete [] map[i];
@@ -125,11 +125,37 @@ struct PicturePGM
             for(int col=1; col<width+padding*2-1; ++col)
                 new_map[row-1][col-1] = map[row][col];
         
-        for(unsigned int i=0; i<height+padding*2; ++i)
-            delete [] map[i];
-        delete [] map;
+        if(map != nullptr)
+        {
+            for(unsigned int i=0; i<height+padding*2; ++i)
+                delete [] map[i];
+            delete [] map;
+        }
 
         map = new_map;
+    }
+
+    bool reinitWithValue(float value, uint32_t width, uint32_t height)
+    {
+        float** new_map = new float*[height];
+        if(new_map == nullptr) return false;
+
+        for(uint32_t row=0; row<height; ++row)
+        {
+            new_map[row] = new float[width];
+            if(new_map[row] == nullptr) return false;
+            for(uint32_t col=0; col<width; ++col)
+                new_map[row][col] = value;
+        }
+
+        if(map != nullptr)
+        {
+            for(uint32_t row=0; row<height; ++row)
+                delete [] map[row];
+            delete [] map;
+        }
+        map = new_map;
+        return true;
     }
 
 };
